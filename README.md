@@ -1,7 +1,7 @@
 # 🏪 RetailNexus DE — Cloud-Native Retail Analytics Platform
 
 [![CI Pipeline](https://github.com/sanjana-kulenavar/retailnexus-de/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjana-kulenavar/retailnexus-de/actions)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://python.org)
 [![dbt](https://img.shields.io/badge/dbt-1.8-orange.svg)](https://getdbt.com)
 [![Apache Kafka](https://img.shields.io/badge/kafka-3.7-black.svg)](https://kafka.apache.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -98,7 +98,7 @@ This project runs on AWS. The architecture is cloud-agnostic:
 ### Prerequisites
 - Windows 10/11 with WSL2 (Ubuntu 22.04)
 - Docker Desktop 24+ with WSL2 backend enabled
-- Python 3.11 inside WSL2
+- Python 3.12 inside WSL2
 - Git
 
 ### 1. Clone the Repository
