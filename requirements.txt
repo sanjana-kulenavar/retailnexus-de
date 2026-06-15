@@ -1,5 +1,5 @@
 # Kafka
-kafka-python==2.0.2
+kafka-python-ng==2.2.2
 
 # Data validation
 pydantic==2.7.1
