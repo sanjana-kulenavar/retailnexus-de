@@ -60,7 +60,7 @@ Local Dev: Docker Compose (Kafka, Airflow, Superset)
 | Layer | Tool | Version |
 |---|---|---|
 | Streaming Ingestion | Apache Kafka | 3.7 |
-| Batch Ingestion | Python | 3.11 |
+| Batch Ingestion | Python | 3.12 |
 | Data Lake Storage | AWS S3 | — |
 | Table Format | Delta Lake | 3.x |
 | Distributed Processing | Apache Spark (PySpark) | 3.5 |
