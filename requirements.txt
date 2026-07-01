@@ -1,26 +1,32 @@
-# Kafka
-kafka-python-ng==2.2.2
+# ── Kafka (Python 3.12 compatible fork of kafka-python) ────────────────
+# kafka-python 2.0.2 has a known Python 3.12 bug with kafka.vendor.six.moves
+# kafka-python-ng is the actively maintained fork that fixes this
+kafka-python-ng==2.2.3
 
-# Data validation
-pydantic==2.7.1
+# ── Data Validation ────────────────────────────────────────────────────
+pydantic==2.7.4
 
-# PySpark + Delta Lake
-pyspark==3.5.1
-delta-spark==3.1.0
+# ── PySpark + Delta Lake (tested combination for Python 3.12) ──────────
+# IMPORTANT: pyspark and delta-spark versions must be compatible
+# pyspark 3.5.3 + delta-spark 3.3.0 = verified working combination
+pyspark==3.5.3
+delta-spark==3.3.0
 
-# Data quality
-great-expectations==0.18.15
+# ── AWS SDK ────────────────────────────────────────────────────────────
+boto3==1.34.131
 
-# Utilities
+# ── Data Quality ───────────────────────────────────────────────────────
+great-expectations==1.18.1
+
+# ── Utilities ──────────────────────────────────────────────────────────
 python-dotenv==1.0.1
-boto3==1.34.69
-requests==2.31.0
+requests==2.32.3
 pandas==2.2.2
 
-# Testing
-pytest==8.2.0
+# ── Testing ────────────────────────────────────────────────────────────
+pytest==8.2.2
 pytest-mock==3.14.0
 
-# Code quality
+# ── Code Quality ───────────────────────────────────────────────────────
 black==24.4.2
 flake8==7.0.0
