@@ -243,3 +243,14 @@ data_quality/uncommitted/
 # IDE
 .vscode/settings.json
 *.DS_Store
+# dbt build artifacts
+dbt_project/retailnexus_dbt/target/
+dbt_project/retailnexus_dbt/dbt_packages/
+dbt_project/retailnexus_dbt/logs/
+
+# Data exports (never commit data)
+silver_export.csv
+
+# Snowflake keys
+*.p8
+*.pub

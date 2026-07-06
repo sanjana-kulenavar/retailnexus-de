@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_sales_transactions
+    description: "Cleaned, type-cast sales transactions from Silver"
+    columns:
+      - name: transaction_id
+        description: "Unique transaction identifier"
+        tests:
+          - unique
+          - not_null
+      - name: store_id
+        description: "Store identifier (NL-###)"
+        tests:
+          - not_null
+      - name: total_amount
+        description: "Transaction total in EUR"
+        tests:
+          - not_null

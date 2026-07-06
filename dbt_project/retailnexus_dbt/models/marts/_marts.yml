@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: fct_daily_sales
+    description: "Daily sales aggregated by store — the ReSA audit summary"
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_stores')
+              field: store_id
+      - name: transaction_count
+        tests:
+          - not_null
+
+  - name: dim_stores
+    description: "Store dimension"
+    columns:
+      - name: store_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_products
+    description: "Product dimension with pricing stats"
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
