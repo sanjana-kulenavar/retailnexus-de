@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    database: RETAILNEXUS_PROD
+    schema: RAW
+    tables:
+      - name: sales_transactions_raw
+        description: "Silver-layer sales data loaded from S3 Delta table"
