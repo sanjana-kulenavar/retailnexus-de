@@ -2,7 +2,9 @@ version: "3.8"
 
 # Shared environment variables for Airflow services
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.9.2
+  build:
+    context: .
+    dockerfile: airflow/Dockerfile
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -11,11 +13,15 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
     PYTHONPATH: "/opt/airflow/dags:/opt/airflow/plugins"
+    AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+    AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+    AWS_DEFAULT_REGION: "eu-west-1"
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./logs/airflow:/opt/airflow/logs
     - ./processing/spark_jobs:/opt/airflow/spark_jobs
     - ./dbt_project:/opt/airflow/dbt_project
+    - .:/opt/retailnexus
   depends_on:
     postgres:
       condition: service_healthy

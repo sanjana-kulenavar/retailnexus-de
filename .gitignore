@@ -243,3 +243,4 @@ data_quality/uncommitted/
 # IDE
 .vscode/settings.json
 *.DS_Store
+silver_export.csv
