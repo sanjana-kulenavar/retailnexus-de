@@ -11,6 +11,7 @@ Prerequisites (per Phase 4, once the Snowflake account is active):
 Usage (from the project root):
     .venv/bin/python dashboards/superset/load_silver_to_snowflake.py [csv_path]
 """
+import os
 import sys
 from pathlib import Path
 
@@ -43,8 +44,8 @@ def main() -> int:
 
     conn = connect(
         account="ihekpml-ac28354",
-        user="SANJANA",
-        password="Rahul@october2026",
+        user=os.environ["SNOWFLAKE_USER"],
+        password=os.environ["SNOWFLAKE_PASSWORD"],
         role="DBT_ROLE",
         warehouse="RETAILNEXUS_WH",
         database="RETAILNEXUS_PROD",
