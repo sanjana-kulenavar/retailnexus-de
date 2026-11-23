@@ -1,6 +1,6 @@
 # RetailNexus DE
 
-An end-to-end retail sales-audit data platform that streams point-of-sale transactions through Kafka, PySpark, Delta Lake, and dbt.
+A learning project that builds the full retail sales-audit pipeline locally: Kafka, PySpark Structured Streaming, S3 Bronze and Silver Delta tables, Great Expectations, and dbt marts.
 
 [![CI](https://github.com/sanjana-kulenavar/retailnexus-de/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjana-kulenavar/retailnexus-de/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
