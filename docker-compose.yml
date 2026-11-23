@@ -16,6 +16,14 @@ x-airflow-common: &airflow-common
     AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
     AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     AWS_DEFAULT_REGION: "eu-west-1"
+    DBT_PROFILES_DIR: "/opt/airflow/dbt_project/profiles"
+    SNOWFLAKE_ACCOUNT: "${SNOWFLAKE_ACCOUNT}"
+    SNOWFLAKE_USER: "${SNOWFLAKE_USER}"
+    SNOWFLAKE_PASSWORD: "${SNOWFLAKE_PASSWORD}"
+    SNOWFLAKE_WAREHOUSE: "${SNOWFLAKE_WAREHOUSE}"
+    SNOWFLAKE_DATABASE: "${SNOWFLAKE_DATABASE}"
+    SNOWFLAKE_SCHEMA: "${SNOWFLAKE_SCHEMA}"
+    SNOWFLAKE_ROLE: "${SNOWFLAKE_ROLE}"
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./logs/airflow:/opt/airflow/logs

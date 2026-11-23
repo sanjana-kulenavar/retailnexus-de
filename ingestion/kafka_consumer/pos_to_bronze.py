@@ -9,15 +9,17 @@ import sys
 
 # Add the processing/spark_jobs directory to Python's path
 # so we can import our get_spark_session utility
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)
-)))
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(project_root, "processing", "spark_jobs"))
 
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
-    StructType, StructField,
-    StringType, IntegerType, FloatType, BooleanType
+    StructType,
+    StructField,
+    StringType,
+    IntegerType,
+    FloatType,
+    BooleanType,
 )
 from utils.spark_session import get_spark_session
 from dotenv import load_dotenv
@@ -57,27 +59,30 @@ CHECKPOINT_PATH = "/tmp/retailnexus_checkpoints/pos_bronze/"
 # It must match the fields in your POSTransaction Pydantic schema exactly
 # Think of this like defining columns in an Oracle CREATE TABLE statement
 
-POS_SCHEMA = StructType([
-    # nullable=False means this field CANNOT be null (required)
-    # nullable=True means this field CAN be null (optional)
-    StructField("transaction_id", StringType(),  nullable=False),
-    StructField("store_id",       StringType(),  nullable=False),
-    StructField("terminal_id",    StringType(),  nullable=True),
-    StructField("cashier_id",     StringType(),  nullable=True),
-    StructField("product_id",     StringType(),  nullable=False),
-    StructField("quantity",       IntegerType(), nullable=False),
-    StructField("unit_price",     FloatType(),   nullable=False),
-    StructField("total_amount",   FloatType(),   nullable=False),
-    StructField("payment_method", StringType(),  nullable=True),
-    StructField("transaction_ts", StringType(),  nullable=False),
-    StructField("is_voided",      BooleanType(), nullable=False),
-    StructField("audit_flag",     StringType(),  nullable=True),
-])
+POS_SCHEMA = StructType(
+    [
+        # nullable=False means this field CANNOT be null (required)
+        # nullable=True means this field CAN be null (optional)
+        StructField("transaction_id", StringType(), nullable=False),
+        StructField("store_id", StringType(), nullable=False),
+        StructField("terminal_id", StringType(), nullable=True),
+        StructField("cashier_id", StringType(), nullable=True),
+        StructField("product_id", StringType(), nullable=False),
+        StructField("quantity", IntegerType(), nullable=False),
+        StructField("unit_price", FloatType(), nullable=False),
+        StructField("total_amount", FloatType(), nullable=False),
+        StructField("payment_method", StringType(), nullable=True),
+        StructField("transaction_ts", StringType(), nullable=False),
+        StructField("is_voided", BooleanType(), nullable=False),
+        StructField("audit_flag", StringType(), nullable=True),
+    ]
+)
 
 
 # ─────────────────────────────────────────────────────────────────────
 # MAIN CONSUMER FUNCTION
 # ─────────────────────────────────────────────────────────────────────
+
 
 def run_consumer():
     """
@@ -117,7 +122,6 @@ def run_consumer():
     # Create Spark session with all required configurations
     spark = get_spark_session("resa-kafka-to-bronze")
 
-
     # ── STEP 1: CONNECT TO KAFKA ──────────────────────────────────────
     #
     # readStream vs read:
@@ -131,9 +135,7 @@ def run_consumer():
     # ─────────────────────────────────────────────────────────────────
 
     raw_kafka_df = (
-        spark
-        .readStream
-        .format("kafka")
+        spark.readStream.format("kafka")
         .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS)
         .option("subscribe", KAFKA_TOPIC)
         .option("startingOffsets", "latest")
@@ -153,7 +155,6 @@ def run_consumer():
     # │ timestamp │ time   │ when Kafka received the message     │
     # └──────────────────────────────────────────────────────────┘
     # The actual transaction data is in the 'value' column as bytes
-
 
     # ── STEP 2: PARSE JSON FROM KAFKA ────────────────────────────────
     #
@@ -197,7 +198,6 @@ def run_consumer():
         )
     )
 
-
     # ── STEP 3: ADD PARTITION COLUMNS AND METADATA ────────────────────
     #
     # WHY PARTITION BY DATE?
@@ -219,22 +219,19 @@ def run_consumer():
         parsed_df
         # Convert transaction_ts string → proper timestamp type
         # This enables date extraction functions below
-        .withColumn(
-            "transaction_ts",
-            F.to_timestamp("transaction_ts")
-        )
+        .withColumn("transaction_ts", F.to_timestamp("transaction_ts"))
         # Extract year, month, day for partition folders
-        .withColumn("year",  F.year("transaction_ts"))
+        .withColumn("year", F.year("transaction_ts"))
         .withColumn("month", F.month("transaction_ts"))
-        .withColumn("day",   F.dayofmonth("transaction_ts"))
+        .withColumn("day", F.dayofmonth("transaction_ts"))
         # When this pipeline processed the record
-        .withColumn("ingested_at",   F.current_timestamp())
+        .withColumn("ingested_at", F.current_timestamp())
         # Pipeline name — useful when multiple pipelines write to same bucket
         .withColumn("pipeline_name", F.lit("resa-kafka-bronze"))
         # Source system — mirrors SOURCE_SYSTEM concept in Oracle ETL
         .withColumn("source_system", F.lit("POS_KAFKA_STREAM"))
         # Data layer marker — makes it clear this is Bronze (raw) data
-        .withColumn("data_layer",    F.lit("BRONZE"))
+        .withColumn("data_layer", F.lit("BRONZE"))
         # ── DATA QUALITY: Remove rows where JSON parsing failed ────────
         # If from_json() cannot parse a message, it sets fields to null
         # We filter those out here to keep Bronze data clean
@@ -242,7 +239,6 @@ def run_consumer():
         .filter(F.col("store_id").isNotNull())
         .filter(F.col("total_amount").isNotNull())
     )
-
 
     # ── STEP 4: WRITE TO S3 BRONZE ────────────────────────────────────
     #
@@ -265,9 +261,7 @@ def run_consumer():
     # ─────────────────────────────────────────────────────────────────
 
     streaming_query = (
-        enriched_df
-        .writeStream
-        .format("parquet")
+        enriched_df.writeStream.format("parquet")
         .outputMode("append")
         .option("path", BRONZE_PATH)
         .option("checkpointLocation", CHECKPOINT_PATH)

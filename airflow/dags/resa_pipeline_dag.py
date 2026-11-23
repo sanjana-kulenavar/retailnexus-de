@@ -3,6 +3,10 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 
 PROJECT_DIR = "/opt/retailnexus"
+DBT_PROJECT_DIR = "/opt/airflow/dbt_project/retailnexus_dbt"
+DBT_PROFILES_DIR = "/opt/airflow/dbt_project/profiles"
+# pip installs user-level packages here in the official Airflow image
+DBT_PATH_PREFIX = "export PATH=$PATH:/home/airflow/.local/bin && "
 
 default_args = {
     "owner": "sanjana",
@@ -40,4 +44,24 @@ with DAG(
         ),
     )
 
-    bronze_to_silver >> validate_silver
+    dbt_run = BashOperator(
+        task_id="dbt_run",
+        bash_command=(
+            f"cd {PROJECT_DIR} && "
+            f"{DBT_PATH_PREFIX}"
+            f"dbt run --project-dir {DBT_PROJECT_DIR} "
+            f"--profiles-dir {DBT_PROFILES_DIR}"
+        ),
+    )
+
+    dbt_test = BashOperator(
+        task_id="dbt_test",
+        bash_command=(
+            f"cd {PROJECT_DIR} && "
+            f"{DBT_PATH_PREFIX}"
+            f"dbt test --project-dir {DBT_PROJECT_DIR} "
+            f"--profiles-dir {DBT_PROFILES_DIR}"
+        ),
+    )
+
+    bronze_to_silver >> validate_silver >> dbt_run >> dbt_test

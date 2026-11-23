@@ -56,54 +56,40 @@ def get_spark_session(app_name: str) -> SparkSession:
 
     # These JAR packages are the Java libraries Spark needs
     # They are downloaded automatically the first time you run Spark
-    spark_packages = ",".join([
-        # Kafka connector: lets Spark read/write Kafka topics
-        "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3",
-        # Delta Lake: ACID transactions on S3
-        "io.delta:delta-spark_2.12:3.3.0",
-        # AWS S3A FileSystem: lets Spark read/write S3
-        "org.apache.hadoop:hadoop-aws:3.3.4",
-        # AWS SDK: core AWS Java library (required by hadoop-aws)
-        "com.amazonaws:aws-java-sdk-bundle:1.12.262",
-    ])
+    spark_packages = ",".join(
+        [
+            # Kafka connector: lets Spark read/write Kafka topics
+            "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3",
+            # Delta Lake: ACID transactions on S3
+            "io.delta:delta-spark_2.12:3.3.0",
+            # AWS S3A FileSystem: lets Spark read/write S3
+            "org.apache.hadoop:hadoop-aws:3.3.4",
+            # AWS SDK: core AWS Java library (required by hadoop-aws)
+            "com.amazonaws:aws-java-sdk-bundle:1.12.262",
+        ]
+    )
 
     spark = (
-        SparkSession.builder
-        .appName(app_name)
+        SparkSession.builder.appName(app_name)
         .master("local[*]")
-
         # ── Delta Lake configuration ──────────────────────────────
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config(
-            "spark.sql.extensions",
-            "io.delta.sql.DeltaSparkSessionExtension"
+            "spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog"
         )
-        .config(
-            "spark.sql.catalog.spark_catalog",
-            "org.apache.spark.sql.delta.catalog.DeltaCatalog"
-        )
-
         # ── AWS S3 configuration ──────────────────────────────────
         .config("spark.hadoop.fs.s3a.access.key", aws_access_key)
         .config("spark.hadoop.fs.s3a.secret.key", aws_secret_key)
-        .config(
-            "spark.hadoop.fs.s3a.endpoint",
-            f"s3.{aws_region}.amazonaws.com"
-        )
-        .config(
-            "spark.hadoop.fs.s3a.impl",
-            "org.apache.hadoop.fs.s3a.S3AFileSystem"
-        )
+        .config("spark.hadoop.fs.s3a.endpoint", f"s3.{aws_region}.amazonaws.com")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         # Path-style access: required for eu-west-1 and other non-US regions
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
         # Increase connection timeout for slower network conditions
         .config("spark.hadoop.fs.s3a.connection.timeout", "60000")
-
         # ── Java package downloads ────────────────────────────────
         .config("spark.jars.packages", spark_packages)
-
         # ── Reduce noise in logs (only show WARN and ERROR) ───────
         .config("spark.log.level", "WARN")
-
         .getOrCreate()
     )
 

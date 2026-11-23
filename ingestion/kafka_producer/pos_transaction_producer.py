@@ -4,14 +4,14 @@
 # IMPORTS — loading the Python libraries we need
 # ─────────────────────────────────────────────────────────────────────
 
-import json      # converts Python dicts → JSON text for Kafka
-import random    # generates random values for fake transactions
-import time      # controls how fast we send (10 per second)
-import uuid      # generates unique transaction IDs
-import os        # reads environment variables from .env file
+import json  # converts Python dicts → JSON text for Kafka
+import random  # generates random values for fake transactions
+import time  # controls how fast we send (10 per second)
+import uuid  # generates unique transaction IDs
+import os  # reads environment variables from .env file
 
 from datetime import datetime
-from kafka import KafkaProducer           # from kafka-python-ng package
+from kafka import KafkaProducer  # from kafka-python-ng package
 from transaction_schema import POSTransaction
 from dotenv import load_dotenv
 
@@ -36,10 +36,7 @@ PRODUCT_IDS = [f"PROD-{str(i).zfill(5)}" for i in range(1, 5001)]
 # Assign a fixed price to each product
 # random.uniform(0.99, 499.99) = random decimal between 0.99 and 499.99
 # round(..., 2) = round to 2 decimal places (cents)
-PRODUCT_PRICES = {
-    product: round(random.uniform(0.99, 499.99), 2)
-    for product in PRODUCT_IDS
-}
+PRODUCT_PRICES = {product: round(random.uniform(0.99, 499.99), 2) for product in PRODUCT_IDS}
 
 # Payment method weights — Dutch market proportions
 # In the Netherlands ~60% of transactions are contactless card
@@ -54,6 +51,7 @@ TERMINALS_PER_STORE = {store: random.randint(2, 10) for store in STORE_IDS}
 # ─────────────────────────────────────────────────────────────────────
 # TRANSACTION GENERATOR
 # ─────────────────────────────────────────────────────────────────────
+
 
 def generate_transaction() -> POSTransaction:
     """
@@ -84,10 +82,9 @@ def generate_transaction() -> POSTransaction:
 
     # Pick a quantity — lower quantities are more common in retail
     # random.choices() lets you assign probabilities to each option
-    quantity = random.choices(
-        population=[1, 2, 3, 4, 5],
-        weights=[0.55, 0.25, 0.12, 0.05, 0.03]
-    )[0]  # [0] because random.choices returns a list, we want the first item
+    quantity = random.choices(population=[1, 2, 3, 4, 5], weights=[0.55, 0.25, 0.12, 0.05, 0.03])[
+        0
+    ]  # [0] because random.choices returns a list, we want the first item
 
     # Calculate total
     total_amount = round(unit_price * quantity, 2)
@@ -121,13 +118,14 @@ def generate_transaction() -> POSTransaction:
         payment_method=random.choices(PAYMENT_METHODS, weights=PAYMENT_WEIGHTS)[0],
         transaction_ts=datetime.utcnow().isoformat(),
         is_voided=is_voided,
-        audit_flag=audit_flag
+        audit_flag=audit_flag,
     )
 
 
 # ─────────────────────────────────────────────────────────────────────
 # KAFKA PRODUCER SETUP
 # ─────────────────────────────────────────────────────────────────────
+
 
 def create_kafka_producer() -> KafkaProducer:
     """
@@ -156,8 +154,8 @@ def create_kafka_producer() -> KafkaProducer:
         bootstrap_servers=bootstrap_servers,
         key_serializer=lambda key: key.encode("utf-8"),
         value_serializer=lambda value: json.dumps(value).encode("utf-8"),
-        retries=3,           # retry up to 3 times if sending fails
-        acks="all",          # wait for Kafka to confirm message was saved
+        retries=3,  # retry up to 3 times if sending fails
+        acks="all",  # wait for Kafka to confirm message was saved
         request_timeout_ms=5000,
     )
 
@@ -165,6 +163,7 @@ def create_kafka_producer() -> KafkaProducer:
 # ─────────────────────────────────────────────────────────────────────
 # MAIN RUNNER
 # ─────────────────────────────────────────────────────────────────────
+
 
 def run_producer(transactions_per_second: int = 10):
     """
@@ -211,11 +210,7 @@ def run_producer(transactions_per_second: int = 10):
                 # topic: which Kafka topic to write to
                 # key: store_id — ensures ordering per store
                 # value: the full transaction as a dict (serializer handles JSON)
-                producer.send(
-                    topic=topic,
-                    key=txn.store_id,
-                    value=txn_dict
-                )
+                producer.send(topic=topic, key=txn.store_id, value=txn_dict)
 
                 batch_transactions.append(txn)
                 total_sent += 1

@@ -41,13 +41,14 @@ def verify_silver():
     print(f"  Negative amounts (should be 0): {negatives}")
 
     print("\n  Audit flag distribution:")
-    df.groupBy("audit_flag").count() \
-      .withColumn("percentage", F.round(F.col("count") / total * 100, 2)) \
-      .orderBy("count", ascending=False).show()
+    df.groupBy("audit_flag").count().withColumn(
+        "percentage", F.round(F.col("count") / total * 100, 2)
+    ).orderBy("count", ascending=False).show()
 
     print("  Sample Silver records:")
-    df.select("transaction_id", "store_id", "total_amount", "audit_flag", "data_layer") \
-      .limit(5).show(truncate=False)
+    df.select("transaction_id", "store_id", "total_amount", "audit_flag", "data_layer").limit(
+        5
+    ).show(truncate=False)
 
     print("=" * 60)
     print("  Silver verification complete")

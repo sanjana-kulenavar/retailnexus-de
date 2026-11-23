@@ -40,8 +40,7 @@ def transform():
     print("  [2/6] Deduplicating by transaction_id...")
     window = Window.partitionBy("transaction_id").orderBy(F.col("ingested_at").desc())
     deduped_df = (
-        bronze_df
-        .withColumn("row_num", F.row_number().over(window))
+        bronze_df.withColumn("row_num", F.row_number().over(window))
         .filter(F.col("row_num") == 1)
         .drop("row_num")
     )
@@ -51,45 +50,51 @@ def transform():
 
     print("  [3/6] Cleaning and type casting...")
     cleaned_df = (
-        deduped_df
-        .withColumn("transaction_ts", F.to_timestamp("transaction_ts"))
+        deduped_df.withColumn("transaction_ts", F.to_timestamp("transaction_ts"))
         .withColumn("expected_total", F.round(F.col("quantity") * F.col("unit_price"), 2))
         .withColumn("silver_processed_at", F.current_timestamp())
         .withColumn("data_layer", F.lit("SILVER"))
     )
 
     print("  [4/6] Applying business rule validation...")
-    validated_df = (
-        cleaned_df
-        .withColumn(
-            "rejection_reason",
-            F.when(F.col("transaction_id").isNull(), F.lit("NULL_TRANSACTION_ID"))
-             .when(F.col("store_id").isNull(), F.lit("NULL_STORE_ID"))
-             .when(F.col("total_amount") < 0, F.lit("NEGATIVE_AMOUNT"))
-             .when(F.abs(F.col("total_amount") - F.col("expected_total")) > 0.01, F.lit("TOTAL_MISMATCH"))
-             .when(~F.col("store_id").rlike("^NL-[0-9]{3}$"), F.lit("INVALID_STORE_FORMAT"))
-             .otherwise(F.lit(None))
+    validated_df = cleaned_df.withColumn(
+        "rejection_reason",
+        F.when(F.col("transaction_id").isNull(), F.lit("NULL_TRANSACTION_ID"))
+        .when(F.col("store_id").isNull(), F.lit("NULL_STORE_ID"))
+        .when(F.col("total_amount") < 0, F.lit("NEGATIVE_AMOUNT"))
+        .when(
+            F.abs(F.col("total_amount") - F.col("expected_total")) > 0.01, F.lit("TOTAL_MISMATCH")
         )
-        .withColumn("is_valid", F.col("rejection_reason").isNull())
-    )
+        .when(~F.col("store_id").rlike("^NL-[0-9]{3}$"), F.lit("INVALID_STORE_FORMAT"))
+        .otherwise(F.lit(None)),
+    ).withColumn("is_valid", F.col("rejection_reason").isNull())
 
     print("  [5/6] Re-classifying audit flags...")
     final_df = validated_df.withColumn(
         "audit_flag",
         F.when(F.col("is_voided"), F.lit("VOIDED"))
-         .when(F.col("total_amount") > 5000, F.lit("EXCEPTION_HIGH_VALUE"))
-         .otherwise(F.lit("VALID"))
+        .when(F.col("total_amount") > 5000, F.lit("EXCEPTION_HIGH_VALUE"))
+        .otherwise(F.lit("VALID")),
     )
 
     print("  [6/6] Writing to Delta Lake...")
-    valid_df = final_df.filter(F.col("is_valid")).drop("expected_total", "is_valid", "rejection_reason")
+    valid_df = final_df.filter(F.col("is_valid")).drop(
+        "expected_total", "is_valid", "rejection_reason"
+    )
     valid_count = valid_df.count()
     write_delta(valid_df, SILVER_PATH, mode="overwrite", partition_by=["year", "month", "day"])
     print(f"        Valid records -> Silver: {valid_count:,}")
 
     rejects_df = final_df.filter(~F.col("is_valid")).select(
-        "transaction_id", "store_id", "product_id", "quantity", "unit_price",
-        "total_amount", "expected_total", "rejection_reason", "silver_processed_at"
+        "transaction_id",
+        "store_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "total_amount",
+        "expected_total",
+        "rejection_reason",
+        "silver_processed_at",
     )
     rejects_count = rejects_df.count()
     if rejects_count > 0:
