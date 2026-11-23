@@ -1,7 +1,7 @@
-# Dashboards (Planned)
+# Dashboards
 
-The serving layer is not implemented yet. This directory is reserved for
-Superset dashboard definitions and exported artefacts.
+Superset-based serving layer. See [superset/README.md](superset/README.md)
+for the connection details, datasets, and chart specifications.
 
 ## Planned scope
 
