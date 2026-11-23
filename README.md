@@ -424,7 +424,3 @@ Great Expectations are not part of CI.
 ## License
 
 Released under the [MIT License](LICENSE).
-
-## Author
-
-Sanjana Kulenavar — [github.com/sanjana-kulenavar](https://github.com/sanjana-kulenavar)
